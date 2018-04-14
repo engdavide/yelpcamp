@@ -11,6 +11,11 @@ let arrCamps = [
     {name: "Pine Mountain", image: "https://www.nps.gov/havo/planyourvisit/images/Kulanaokuaiki-Campground_NPSJayRobinson_600_1.jpg"},
     {name: "Smoky Hills", image: "https://www.nps.gov/havo/planyourvisit/images/namakanipaio_cabin_600.jpg"},
     {name: "Birddog's Paradise", image: "https://www.nps.gov/havo/planyourvisit/images/Night-sky-at-Kulanaokuaiki-with-Kilauea-glow_JacobWFrank_960.jpg"},
+    {name: "KOA Utah", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Coulter_Campground.JPG/1200px-Coulter_Campground.JPG"},
+    {name: "Salmon Creek", image: "https://www.nps.gov/havo/planyourvisit/images/Namakanipaio_960.jpg"},
+    {name: "Pine Mountain", image: "https://www.nps.gov/havo/planyourvisit/images/Kulanaokuaiki-Campground_NPSJayRobinson_600_1.jpg"},
+    {name: "Smoky Hills", image: "https://www.nps.gov/havo/planyourvisit/images/namakanipaio_cabin_600.jpg"},
+    {name: "Birddog's Paradise", image: "https://www.nps.gov/havo/planyourvisit/images/Night-sky-at-Kulanaokuaiki-with-Kilauea-glow_JacobWFrank_960.jpg"},
     {name: "KOA Utah", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Coulter_Campground.JPG/1200px-Coulter_Campground.JPG"}
     ];
 
