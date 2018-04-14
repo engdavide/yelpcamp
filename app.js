@@ -1,42 +1,74 @@
-const express = require('express');
-const request = require('request'); //Don't need this just yet
-const bodyParser = require("body-parser");
+const   express     = require('express'),
+        request     = require('request'),
+        bodyParser  = require("body-parser"),
+        mongoose    = require("mongoose")
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
-let arrCamps = [
-    {name: "Salmon Creek", image: "https://www.nps.gov/havo/planyourvisit/images/Namakanipaio_960.jpg"},
-    {name: "Pine Mountain", image: "https://www.nps.gov/havo/planyourvisit/images/Kulanaokuaiki-Campground_NPSJayRobinson_600_1.jpg"},
-    {name: "Smoky Hills", image: "https://www.nps.gov/havo/planyourvisit/images/namakanipaio_cabin_600.jpg"},
-    {name: "Birddog's Paradise", image: "https://www.nps.gov/havo/planyourvisit/images/Night-sky-at-Kulanaokuaiki-with-Kilauea-glow_JacobWFrank_960.jpg"},
-    {name: "KOA Utah", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Coulter_Campground.JPG/1200px-Coulter_Campground.JPG"},
-    {name: "Salmon Creek", image: "https://www.nps.gov/havo/planyourvisit/images/Namakanipaio_960.jpg"},
-    {name: "Pine Mountain", image: "https://www.nps.gov/havo/planyourvisit/images/Kulanaokuaiki-Campground_NPSJayRobinson_600_1.jpg"},
-    {name: "Smoky Hills", image: "https://www.nps.gov/havo/planyourvisit/images/namakanipaio_cabin_600.jpg"},
-    {name: "Birddog's Paradise", image: "https://www.nps.gov/havo/planyourvisit/images/Night-sky-at-Kulanaokuaiki-with-Kilauea-glow_JacobWFrank_960.jpg"},
-    {name: "KOA Utah", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Coulter_Campground.JPG/1200px-Coulter_Campground.JPG"}
-    ];
+
+mongoose.connect("mongodb://localhost/yelpcamp");
+
+let campSchema = new mongoose.Schema({
+    name: String,
+    image: String,
+    description: String
+});
+
+let Camp = mongoose.model("Camp", campSchema);
+
+// Camp.create({
+//     name: "Granite Hill",
+//     image: "https://img.hipcamp.com/image/upload/c_limit,f_auto,h_1200,q_60,w_1920/v1444773347/campground-photos/cdxdho9t8v62cfzgkmtm.jpg",
+//     description: "beautiful, but no services"
+// });
+
 
 app.get("/", function(req, res){
     res.render("home");
 });
 
+//Index 
 app.get("/camps", function(req, res){
-    res.render("camps", {camps: arrCamps});
+    Camp.find({}, function(err, allcamps){
+        if(err){
+            console.log(err)
+        } else {
+            res.render("index", {camps: allcamps})
+        }
+    })
 });
 
+// CREATE
 app.post("/camps", function(req, res){
     let name = req.body.name;
     let image = req.body.image;
-    let newCamp = {name: name, image: image};
-    arrCamps.push(newCamp);
-    res.redirect("/camps"); 
+    let desc = req.body.description;
+    let newCamp = {name: name, image: image, description: desc};
+        Camp.create(newCamp, function(err, newlyCreated){
+            if(err){
+                console.log(err)
+            }else{
+                res.redirect("/camps"); 
+            }
+        })
+
 });
 
+//NEW
 app.get("/camps/new", function(req, res) {
     res.render("new");
+})
+
+//SHOW
+app.get("/camps/:id", function(req, res){
+    Camp.findById (req.params.id, function(err, foundCamp){
+        if(err){
+                console.log(err)
+        } else{ res.render("show", {camp: foundCamp})
+        }
+    })
 })
 
 // app.get("/camps", function(req, res){
