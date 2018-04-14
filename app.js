@@ -1,7 +1,9 @@
 const   express     = require('express'),
         request     = require('request'),
         bodyParser  = require("body-parser"),
-        mongoose    = require("mongoose")
+        mongoose    = require("mongoose"),
+        Camp        = require("./models/camps"),
+        Comment     = require("./models/comment")
 
 const app = express();
 app.set("view engine", "ejs");
@@ -9,14 +11,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 mongoose.connect("mongodb://localhost/yelpcamp");
-
-let campSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-let Camp = mongoose.model("Camp", campSchema);
 
 // Camp.create({
 //     name: "Granite Hill",
@@ -35,7 +29,7 @@ app.get("/camps", function(req, res){
         if(err){
             console.log(err)
         } else {
-            res.render("index", {camps: allcamps})
+            res.render("camps/index", {camps: allcamps})
         }
     })
 });
@@ -58,29 +52,54 @@ app.post("/camps", function(req, res){
 
 //NEW
 app.get("/camps/new", function(req, res) {
-    res.render("new");
+    res.render("camps/new");
 })
 
 //SHOW
 app.get("/camps/:id", function(req, res){
-    Camp.findById (req.params.id, function(err, foundCamp){
+    Camp.findById (req.params.id).populate("comments").exec(function(err, foundCamp){
+            if(err){
+                    console.log(err);
+            } else{ res.render("camps/show", {camp: foundCamp});
+            }
+    });
+});
+
+
+//comment routes
+
+app.get("/camps/:id/comments/new", function(req, res){
+    Camp.findById(req.params.id, function(err, campground){
         if(err){
-                console.log(err)
-        } else{ res.render("show", {camp: foundCamp})
+            console.log(err);
+        } else {
+            res.render("comments/new", {camp: campground});
         }
+    })
+
+});
+
+app.post("/camps/:id/comments", function(req, res){
+    Camp.findById(req.params.id, function(err, campground){
+        if(err){
+            console.log(err);
+            res.redirect("/camps/"+ campground._id);
+        } else {
+                Comment.create(req.body.comment, function(err, comment){
+                    if(err){
+                        console.log(err);
+                    } else {
+                        campground.comments.push(comment);
+                        campground.save();
+                        res.redirect("/camps/" + campground._id);
+                    }
+                })
+        }
+            
     })
 })
 
-// app.get("/camps", function(req, res){
-//     let query = req.query.search;
-//     let url = "http://www.omdbapi.com/?s=" + query + "&apikey=thewdb";
-//   request(url, function(error, response, body){
-//       if(!error && response.statusCode ==200){
-//           let data = JSON.parse(body);
-//           res.render("results", {data: data});
-//       }
-//   }) ;
-// });
+
 
 
 app.listen(process.env.PORT, process.env.IP, function(){

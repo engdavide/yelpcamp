@@ -1,0 +1,18 @@
+<% include ../partials/header %>
+<h1><%= camp.name %></h1>
+
+<img class="thumbnail img-responsive" src="<%=camp.image%>"></img>
+<p> <%=camp.description%> </p>
+
+<p>
+    <a href="/camps/<%=camp._id%>/comments/new" class="btn btn-success">Add a Comment</a>
+</p>
+
+<% camp.comments.forEach(function(comment){ %>
+    <p>
+        <strong><%= comment.author %></strong> -
+        <%= comment.text %>
+    </p>
+<% }) %>
+
+<% include ../partials/footer %>
