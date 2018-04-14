@@ -1,14 +1,30 @@
-const   express     = require('express'),
-        request     = require('request'),
-        bodyParser  = require("body-parser"),
-        mongoose    = require("mongoose"),
-        Camp        = require("./models/camps"),
-        Comment     = require("./models/comment")
+const   express                 = require('express'),
+        request                 = require('request'),
+        bodyParser              = require("body-parser"),
+        mongoose                = require("mongoose"),
+        Camp                    = require("./models/camps"),
+        Comment                 = require("./models/comment"),
+        User                    = require("./models/user"),
+        passport                = require("passport")
+        LocalStrategy           = require("passport-local"),
+        passportLocalMongoose   = require("passport-local-mongoose")
+        
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(__dirname + "/public"));
 
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(require("express-session")({
+    secret: "123456",
+    resave: false,
+    saveUnitialized: false
+}));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 mongoose.connect("mongodb://localhost/yelpcamp");
 
@@ -100,6 +116,7 @@ app.post("/camps/:id/comments", function(req, res){
 })
 
 
+// AUTH routes
 
 
 app.listen(process.env.PORT, process.env.IP, function(){
