@@ -2,29 +2,40 @@ const   express                 = require('express'),
         request                 = require('request'),
         bodyParser              = require("body-parser"),
         mongoose                = require("mongoose"),
+        passport                = require("passport"),
+        LocalStrategy           = require("passport-local"),
+        passportLocalMongoose   = require("passport-local-mongoose"),
         Camp                    = require("./models/camps"),
         Comment                 = require("./models/comment"),
-        User                    = require("./models/user"),
-        passport                = require("passport")
-        LocalStrategy           = require("passport-local"),
-        passportLocalMongoose   = require("passport-local-mongoose")
+        User                    = require("./models/user");
+        
+const commentRoutes = require("./routes/comments"),
+        campRoutes = require("./routes/camps"),
+        indexRoutes = require("./routes/index");
+        
+
         
 
 const app = express();
+
+
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
 
+//PASSPORT CONFIG
+app.use(require("express-session")({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(require("express-session")({
-    secret: "123456",
-    resave: false,
-    saveUnitialized: false
-}));
 
+passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
 
 mongoose.connect("mongodb://localhost/yelpcamp");
 
@@ -35,90 +46,22 @@ mongoose.connect("mongodb://localhost/yelpcamp");
 // });
 
 
-app.get("/", function(req, res){
-    res.render("home");
-});
-
-//Index 
-app.get("/camps", function(req, res){
-    Camp.find({}, function(err, allcamps){
-        if(err){
-            console.log(err)
-        } else {
-            res.render("camps/index", {camps: allcamps})
-        }
-    })
-});
-
-// CREATE
-app.post("/camps", function(req, res){
-    let name = req.body.name;
-    let image = req.body.image;
-    let desc = req.body.description;
-    let newCamp = {name: name, image: image, description: desc};
-        Camp.create(newCamp, function(err, newlyCreated){
-            if(err){
-                console.log(err)
-            }else{
-                res.redirect("/camps"); 
-            }
-        })
-
-});
-
-//NEW
-app.get("/camps/new", function(req, res) {
-    res.render("camps/new");
-})
-
-//SHOW
-app.get("/camps/:id", function(req, res){
-    Camp.findById (req.params.id).populate("comments").exec(function(err, foundCamp){
-            if(err){
-                    console.log(err);
-            } else{ res.render("camps/show", {camp: foundCamp});
-            }
-    });
-});
-
-
-//comment routes
-
-app.get("/camps/:id/comments/new", function(req, res){
-    Camp.findById(req.params.id, function(err, campground){
-        if(err){
-            console.log(err);
-        } else {
-            res.render("comments/new", {camp: campground});
-        }
-    })
-
-});
-
-app.post("/camps/:id/comments", function(req, res){
-    Camp.findById(req.params.id, function(err, campground){
-        if(err){
-            console.log(err);
-            res.redirect("/camps/"+ campground._id);
-        } else {
-                Comment.create(req.body.comment, function(err, comment){
-                    if(err){
-                        console.log(err);
-                    } else {
-                        campground.comments.push(comment);
-                        campground.save();
-                        res.redirect("/camps/" + campground._id);
-                    }
-                })
-        }
-            
-    })
+//Cool way to apply this pass through to all routes.
+app.use(function(req,res,next){
+    res.locals.currentUser = req.user;
+    next();
 })
 
 
-// AUTH routes
+app.use("/camps/:id/comments/", commentRoutes);
+app.use("/camps", campRoutes);
+app.use(indexRoutes);
 
 
 app.listen(process.env.PORT, process.env.IP, function(){
     console.log("Yelp Camp is up!!");
 });
+
+
+
+
